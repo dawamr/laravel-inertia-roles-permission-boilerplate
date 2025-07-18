@@ -1,0 +1,39 @@
+FROM dunglas/frankenphp:latest-php8.3-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apk add --no-cache \
+    git \
+    curl \
+    libpng-dev \
+    libzip-dev \
+    postgresql-dev \
+    zip \
+    unzip
+
+# Install PHP extensions
+RUN apk add --no-cache $PHPIZE_DEPS \
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip exif pcntl gd opcache intl
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy application files
+COPY . /app
+
+# Install PHP dependencies only
+RUN composer install --optimize-autoloader
+
+# Set permissions
+RUN chmod -R 775 /app/storage /app/bootstrap/cache
+
+# Generate application key if .env exists
+RUN test -f .env && php artisan key:generate --force || echo "No .env file found, skipping key generation"
+
+# Expose port
+EXPOSE 8000
+
+# Start FrankenPHP
+CMD ["php", "artisan", "octane:start", "--server=frankenphp", "--host=0.0.0.0", "--port=8000"] 

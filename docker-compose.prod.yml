@@ -1,0 +1,41 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: laju-ppic-app-prod
+    restart: unless-stopped
+    ports:
+      - "8631:8000"
+    volumes:
+      - ./storage:/app/storage
+      - ./storage/logs:/app/storage/logs
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=${APP_URL}
+      - APP_KEY=${APP_KEY}
+      - LOG_CHANNEL=daily
+      - LOG_LEVEL=warning
+      - OCTANE_SERVER=frankenphp
+      - OCTANE_WORKERS=auto
+      - OCTANE_MAX_REQUESTS=1000
+      # DB MAIN
+      - DB_CONNECTION=${DB_CONNECTION:-pgsql}
+      - DB_HOST=host.docker.internal
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      # LOGGING
+      - LOG_CHANNEL=${LOG_CHANNEL:-daily}
+
+      # CACHE
+      # - REDIS_HOST=redis
+      # - REDIS_PORT=6379
+    networks:
+      - ppic-laju-network-prod
+
+networks:
+  ppic-laju-network-prod:
+    driver: bridge
