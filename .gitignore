@@ -25,3 +25,4 @@ composer.lock
 public/frankenphp-worker.php
 
 *.md
+.vite
